@@ -6,6 +6,10 @@
 #include "Misc/MessageDialog.h"
 #include "ToolMenus.h"
 
+//シーケンサー
+#include "Sequencer/Public/ISequencerModule.h"
+
+
 static const FName SequencerExtensionTabName("SequencerExtension");
 
 #define LOCTEXT_NAMESPACE "FSequencerExtensionModule"
@@ -27,12 +31,33 @@ void FSequencerExtensionModule::StartupModule()
 		FCanExecuteAction());
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FSequencerExtensionModule::RegisterMenus));
+
+	//Toolbar
+	TSharedPtr<FUICommandList> ToolbarCommands = MakeShareable(new FUICommandList);
+	ISequencerModule& SequencerModule = FModuleManager::GetModuleChecked<ISequencerModule>("Sequencer");
+	ToolBarExtender = MakeShareable(new FExtender);
+	ToolBarExtender->AddToolBarExtension(
+		"Level Sequence Separator",
+		EExtensionHook::After,
+		ToolbarCommands,
+		FToolBarExtensionDelegate::CreateRaw(this, &FSequencerExtensionModule::AddToolBarExtention)
+	);
+	SequencerModule.GetToolBarExtensibilityManager()->AddExtender(ToolBarExtender);
+
 }
 
 void FSequencerExtensionModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
+
+	//ToolBar
+	if (ToolBarExtender.IsValid() && FModuleManager::Get().IsModuleLoaded("Sequencer"))
+	{
+		ISequencerModule& SequencerModule = FModuleManager::GetModuleChecked<ISequencerModule>("Sequencer");
+		SequencerModule.GetToolBarExtensibilityManager()->RemoveExtender(ToolBarExtender);
+	}
+	ToolBarExtender = nullptr;
 
 	UToolMenus::UnRegisterStartupCallback(this);
 
@@ -77,6 +102,40 @@ void FSequencerExtensionModule::RegisterMenus()
 			}
 		}
 	}
+}
+
+//ToolBar
+void FSequencerExtensionModule::AddToolBarExtention(FToolBarBuilder& ToolBarBuilder)
+{
+	ToolBarBuilder.AddComboButton(
+		FUIAction(),
+		FOnGetContent::CreateRaw(this, &FSequencerExtensionModule::MakeToolbarExtensionMenu),
+		LOCTEXT("SequencerExtension", "ToolBarExtension"),
+		LOCTEXT("SequencerExtension", "ToolBarExtension"),
+		FSlateIcon(FEditorStyle::GetStyleSetName(), "Sequencer.Actions"),	//仮でアクションと同じアイコン
+		false);
+}
+
+TSharedRef<class SWidget> FSequencerExtensionModule::MakeToolbarExtensionMenu()
+{
+	FMenuBuilder MenuBuilder(true, MakeShareable(new FUICommandList));
+	MenuBuilder.BeginSection("SequencerToolBarExtension");
+
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("SequencerExtension", "ToolBarMenu"),
+		LOCTEXT("SequencerExtension", "ToolBarMenu"),
+		FSlateIcon(FEditorStyle::GetStyleSetName(), "Sequencer.Actions"),
+		FUIAction(FExecuteAction::CreateLambda(
+			[]()
+			{
+				FText DialogText = FText::FromString("ToolBarMenuExtension");
+				FMessageDialog::Open(EAppMsgType::Ok, DialogText);
+			}
+	)));
+
+	MenuBuilder.EndSection();
+
+	return MenuBuilder.MakeWidget();
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -22,8 +22,11 @@ public:
 private:
 
 	void RegisterMenus();
-
+	//シーケンサーのツールバーメニュー拡張
+	void AddToolBarExtention(FToolBarBuilder& ToolBarBuilder);
+	TSharedRef<class SWidget> MakeToolbarExtensionMenu();
 
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
+	TSharedPtr<class FExtender> ToolBarExtender;
 };

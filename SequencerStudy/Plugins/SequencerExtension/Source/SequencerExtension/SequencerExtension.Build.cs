@@ -42,6 +42,12 @@ public class SequencerExtension : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+
+				//SequencerExtension
+				"Sequencer",
+
+				//エディター用アイコンなど
+				"EditorStyle",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
