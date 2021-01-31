@@ -1,8 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "SequencerExtension.h"
-#include "SequencerExtensionStyle.h"
-#include "SequencerExtensionCommands.h"
+#include "SequencerExtensionEd.h"
+#include "SequencerExtensionEdStyle.h"
+#include "SequencerExtensionEdCommands.h"
 #include "Misc/MessageDialog.h"
 #include "ToolMenus.h"
 
@@ -14,23 +14,23 @@ static const FName SequencerExtensionTabName("SequencerExtension");
 
 #define LOCTEXT_NAMESPACE "FSequencerExtensionModule"
 
-void FSequencerExtensionModule::StartupModule()
+void FSequencerExtensionEdModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 	
-	FSequencerExtensionStyle::Initialize();
-	FSequencerExtensionStyle::ReloadTextures();
+	FSequencerExtensionEdStyle::Initialize();
+	FSequencerExtensionEdStyle::ReloadTextures();
 
-	FSequencerExtensionCommands::Register();
+	FSequencerExtensionEdCommands::Register();
 	
 	PluginCommands = MakeShareable(new FUICommandList);
 
 	PluginCommands->MapAction(
-		FSequencerExtensionCommands::Get().PluginAction,
-		FExecuteAction::CreateRaw(this, &FSequencerExtensionModule::PluginButtonClicked),
+		FSequencerExtensionEdCommands::Get().PluginAction,
+		FExecuteAction::CreateRaw(this, &FSequencerExtensionEdModule::PluginButtonClicked),
 		FCanExecuteAction());
 
-	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FSequencerExtensionModule::RegisterMenus));
+	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FSequencerExtensionEdModule::RegisterMenus));
 
 	//Toolbar
 	TSharedPtr<FUICommandList> ToolbarCommands = MakeShareable(new FUICommandList);
@@ -40,13 +40,13 @@ void FSequencerExtensionModule::StartupModule()
 		"Level Sequence Separator",
 		EExtensionHook::After,
 		ToolbarCommands,
-		FToolBarExtensionDelegate::CreateRaw(this, &FSequencerExtensionModule::AddToolBarExtention)
+		FToolBarExtensionDelegate::CreateRaw(this, &FSequencerExtensionEdModule::AddToolBarExtention)
 	);
 	SequencerModule.GetToolBarExtensibilityManager()->AddExtender(ToolBarExtender);
 
 }
 
-void FSequencerExtensionModule::ShutdownModule()
+void FSequencerExtensionEdModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
@@ -63,23 +63,23 @@ void FSequencerExtensionModule::ShutdownModule()
 
 	UToolMenus::UnregisterOwner(this);
 
-	FSequencerExtensionStyle::Shutdown();
+	FSequencerExtensionEdStyle::Shutdown();
 
-	FSequencerExtensionCommands::Unregister();
+	FSequencerExtensionEdCommands::Unregister();
 }
 
-void FSequencerExtensionModule::PluginButtonClicked()
+void FSequencerExtensionEdModule::PluginButtonClicked()
 {
 	// Put your "OnButtonClicked" stuff here
 	FText DialogText = FText::Format(
-							LOCTEXT("PluginButtonDialogText", "Add code to {0} in {1} to override this button's actions"),
-							FText::FromString(TEXT("FSequencerExtensionModule::PluginButtonClicked()")),
-							FText::FromString(TEXT("SequencerExtension.cpp"))
-					   );
+			LOCTEXT("PluginButtonDialogText", "Add code to {0} in {1} to override this button's actions"),
+			FText::FromString(TEXT("FSequencerExtensionModule::PluginButtonClicked()")),
+			FText::FromString(TEXT("SequencerExtension.cpp"))
+		);
 	FMessageDialog::Open(EAppMsgType::Ok, DialogText);
 }
 
-void FSequencerExtensionModule::RegisterMenus()
+void FSequencerExtensionEdModule::RegisterMenus()
 {
 	// Owner will be used for cleanup in call to UToolMenus::UnregisterOwner
 	FToolMenuOwnerScoped OwnerScoped(this);
@@ -88,7 +88,7 @@ void FSequencerExtensionModule::RegisterMenus()
 		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
 		{
 			FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
-			Section.AddMenuEntryWithCommandList(FSequencerExtensionCommands::Get().PluginAction, PluginCommands);
+			Section.AddMenuEntryWithCommandList(FSequencerExtensionEdCommands::Get().PluginAction, PluginCommands);
 		}
 	}
 
@@ -97,7 +97,7 @@ void FSequencerExtensionModule::RegisterMenus()
 		{
 			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("Settings");
 			{
-				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FSequencerExtensionCommands::Get().PluginAction));
+				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FSequencerExtensionEdCommands::Get().PluginAction));
 				Entry.SetCommandList(PluginCommands);
 			}
 		}
@@ -105,18 +105,18 @@ void FSequencerExtensionModule::RegisterMenus()
 }
 
 //ToolBar
-void FSequencerExtensionModule::AddToolBarExtention(FToolBarBuilder& ToolBarBuilder)
+void FSequencerExtensionEdModule::AddToolBarExtention(FToolBarBuilder& ToolBarBuilder)
 {
 	ToolBarBuilder.AddComboButton(
 		FUIAction(),
-		FOnGetContent::CreateRaw(this, &FSequencerExtensionModule::MakeToolbarExtensionMenu),
+		FOnGetContent::CreateRaw(this, &FSequencerExtensionEdModule::MakeToolbarExtensionMenu),
 		LOCTEXT("SequencerExtension", "ToolBarExtension"),
 		LOCTEXT("SequencerExtension", "ToolBarExtension"),
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "Sequencer.Actions"),	//仮でアクションと同じアイコン
 		false);
 }
 
-TSharedRef<class SWidget> FSequencerExtensionModule::MakeToolbarExtensionMenu()
+TSharedRef<class SWidget> FSequencerExtensionEdModule::MakeToolbarExtensionMenu()
 {
 	FMenuBuilder MenuBuilder(true, MakeShareable(new FUICommandList));
 	MenuBuilder.BeginSection("SequencerToolBarExtension");
@@ -140,4 +140,4 @@ TSharedRef<class SWidget> FSequencerExtensionModule::MakeToolbarExtensionMenu()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FSequencerExtensionModule, SequencerExtension)
+IMPLEMENT_MODULE(FSequencerExtensionEdModule, SequencerExtensionEd)

@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class SequencerExtension : ModuleRules
+public class SequencerExtensionEd : ModuleRules
 {
-	public SequencerExtension(ReadOnlyTargetRules Target) : base(Target)
+	public SequencerExtensionEd(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		

@@ -16,7 +16,7 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "SequencerExtension",
+			"Name": "SequencerExtensionEd",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
 		}

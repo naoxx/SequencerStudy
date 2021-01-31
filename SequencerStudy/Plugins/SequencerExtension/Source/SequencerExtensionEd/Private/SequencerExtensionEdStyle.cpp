@@ -1,15 +1,15 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "SequencerExtensionStyle.h"
-#include "SequencerExtension.h"
+#include "SequencerExtensionEdStyle.h"
+#include "SequencerExtensionEd.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Styling/SlateStyleRegistry.h"
 #include "Slate/SlateGameResources.h"
 #include "Interfaces/IPluginManager.h"
 
-TSharedPtr< FSlateStyleSet > FSequencerExtensionStyle::StyleInstance = NULL;
+TSharedPtr< FSlateStyleSet > FSequencerExtensionEdStyle::StyleInstance = NULL;
 
-void FSequencerExtensionStyle::Initialize()
+void FSequencerExtensionEdStyle::Initialize()
 {
 	if (!StyleInstance.IsValid())
 	{
@@ -18,16 +18,16 @@ void FSequencerExtensionStyle::Initialize()
 	}
 }
 
-void FSequencerExtensionStyle::Shutdown()
+void FSequencerExtensionEdStyle::Shutdown()
 {
 	FSlateStyleRegistry::UnRegisterSlateStyle(*StyleInstance);
 	ensure(StyleInstance.IsUnique());
 	StyleInstance.Reset();
 }
 
-FName FSequencerExtensionStyle::GetStyleSetName()
+FName FSequencerExtensionEdStyle::GetStyleSetName()
 {
-	static FName StyleSetName(TEXT("SequencerExtensionStyle"));
+	static FName StyleSetName(TEXT("SequencerExtensionEdStyle"));
 	return StyleSetName;
 }
 
@@ -41,10 +41,10 @@ const FVector2D Icon16x16(16.0f, 16.0f);
 const FVector2D Icon20x20(20.0f, 20.0f);
 const FVector2D Icon40x40(40.0f, 40.0f);
 
-TSharedRef< FSlateStyleSet > FSequencerExtensionStyle::Create()
+TSharedRef< FSlateStyleSet > FSequencerExtensionEdStyle::Create()
 {
-	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("SequencerExtensionStyle"));
-	Style->SetContentRoot(IPluginManager::Get().FindPlugin("SequencerExtension")->GetBaseDir() / TEXT("Resources"));
+	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("SequencerExtensionEdStyle"));
+	Style->SetContentRoot(FPaths::ProjectPluginsDir() / TEXT("SequencerExtension/Resources"));
 
 	Style->Set("SequencerExtension.PluginAction", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
 
@@ -57,7 +57,7 @@ TSharedRef< FSlateStyleSet > FSequencerExtensionStyle::Create()
 #undef TTF_FONT
 #undef OTF_FONT
 
-void FSequencerExtensionStyle::ReloadTextures()
+void FSequencerExtensionEdStyle::ReloadTextures()
 {
 	if (FSlateApplication::IsInitialized())
 	{
@@ -65,7 +65,7 @@ void FSequencerExtensionStyle::ReloadTextures()
 	}
 }
 
-const ISlateStyle& FSequencerExtensionStyle::Get()
+const ISlateStyle& FSequencerExtensionEdStyle::Get()
 {
 	return *StyleInstance;
 }

@@ -8,7 +8,7 @@
 class FToolBarBuilder;
 class FMenuBuilder;
 
-class FSequencerExtensionModule : public IModuleInterface
+class FSequencerExtensionEdModule : public IModuleInterface
 {
 public:
 

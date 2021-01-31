@@ -1,10 +1,10 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "SequencerExtensionCommands.h"
+#include "SequencerExtensionEdCommands.h"
 
 #define LOCTEXT_NAMESPACE "FSequencerExtensionModule"
 
-void FSequencerExtensionCommands::RegisterCommands()
+void FSequencerExtensionEdCommands::RegisterCommands()
 {
 	UI_COMMAND(PluginAction, "SequencerExtension", "Execute SequencerExtension action", EUserInterfaceActionType::Button, FInputGesture());
 }
