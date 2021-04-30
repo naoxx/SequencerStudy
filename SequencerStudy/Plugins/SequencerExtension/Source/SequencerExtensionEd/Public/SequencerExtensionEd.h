@@ -26,6 +26,9 @@ private:
 	void AddToolBarExtention(FToolBarBuilder& ToolBarBuilder);
 	TSharedRef<class SWidget> MakeToolbarExtensionMenu();
 
+	//LevelSequenceŽæ“¾
+	class ISequencer* GetCurrentSequencer();
+
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
 	TSharedPtr<class FExtender> ToolBarExtender;

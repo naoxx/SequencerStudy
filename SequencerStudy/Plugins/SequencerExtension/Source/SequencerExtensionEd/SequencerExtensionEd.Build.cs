@@ -26,6 +26,11 @@ public class SequencerExtensionEd : ModuleRules
 			new string[]
 			{
 				"Core",
+
+				//SequencerExtension
+				"LevelSequence",
+				"MovieScene",
+
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -45,9 +50,12 @@ public class SequencerExtensionEd : ModuleRules
 
 				//SequencerExtension
 				"Sequencer",
+				"LevelSequenceEditor",
+
 
 				//エディター用アイコンなど
 				"EditorStyle",
+
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

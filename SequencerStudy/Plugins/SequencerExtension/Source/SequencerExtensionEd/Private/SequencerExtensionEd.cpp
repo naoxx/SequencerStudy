@@ -8,11 +8,41 @@
 
 //ÉVÅ[ÉPÉìÉTÅ[
 #include "Sequencer/Public/ISequencerModule.h"
+#include "LevelSequence.h"
+#include "LevelSequenceEditor/Private/LevelSequenceEditorToolkit.h"
+
+
+//AssetRegistry
+#include "AssetRegistryModule.h"
+
 
 
 static const FName SequencerExtensionTabName("SequencerExtension");
 
 #define LOCTEXT_NAMESPACE "FSequencerExtensionModule"
+
+void CheckSequencer()
+{
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(FName("AssetRegistry"));
+	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+
+	TArray<FAssetData> AssetDatas;
+	AssetRegistry.GetAssetsByClass(ULevelSequence::StaticClass()->GetFName(), AssetDatas);
+
+	for (FAssetData AssetData : AssetDatas)
+	{
+		ULevelSequence* LevelSequence = Cast<ULevelSequence>(AssetData.GetAsset());
+		UMovieScene* MovieScene = LevelSequence->GetMovieScene();
+		for (int i = 0; i < MovieScene->GetSpawnableCount(); i++)
+		{
+			FMovieSceneSpawnable& Spawnable = MovieScene->GetSpawnable(i);
+			FMovieSceneBinding* Binding = MovieScene->FindBinding(Spawnable.GetGuid());
+			Binding->GetTracks();
+			//Å`Å`Å`Ç»ÇÒÇ©Ç∑ÇÈÅ`Å`Å`
+		}
+	}
+}
+
 
 void FSequencerExtensionEdModule::StartupModule()
 {
@@ -77,6 +107,7 @@ void FSequencerExtensionEdModule::PluginButtonClicked()
 			FText::FromString(TEXT("SequencerExtension.cpp"))
 		);
 	FMessageDialog::Open(EAppMsgType::Ok, DialogText);
+	CheckSequencer();
 }
 
 void FSequencerExtensionEdModule::RegisterMenus()
@@ -126,8 +157,9 @@ TSharedRef<class SWidget> FSequencerExtensionEdModule::MakeToolbarExtensionMenu(
 		LOCTEXT("SequencerExtension", "ToolBarMenu"),
 		FSlateIcon(FEditorStyle::GetStyleSetName(), "Sequencer.Actions"),
 		FUIAction(FExecuteAction::CreateLambda(
-			[]()
+			[this]()
 			{
+				ISequencer* Sequencer = GetCurrentSequencer();
 				FText DialogText = FText::FromString("ToolBarMenuExtension");
 				FMessageDialog::Open(EAppMsgType::Ok, DialogText);
 			}
@@ -136,6 +168,32 @@ TSharedRef<class SWidget> FSequencerExtensionEdModule::MakeToolbarExtensionMenu(
 	MenuBuilder.EndSection();
 
 	return MenuBuilder.MakeWidget();
+}
+
+
+ISequencer* FSequencerExtensionEdModule::GetCurrentSequencer()
+{
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(FName("AssetRegistry"));
+	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+
+	TArray<FAssetData> AssetDatas;
+	AssetRegistry.GetAssetsByClass(ULevelSequence::StaticClass()->GetFName(), AssetDatas);
+
+	for (FAssetData AssetData : AssetDatas)
+	{
+		ULevelSequence* LevelSequence = Cast<ULevelSequence>(AssetData.GetAsset());
+
+		UAssetEditorSubsystem* AssetEditorSubsystem = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
+		IAssetEditorInstance* AssetEditor = AssetEditorSubsystem->FindEditorForAsset(LevelSequence, true);
+		FLevelSequenceEditorToolkit* LevelSequenceEditor = (FLevelSequenceEditorToolkit*)AssetEditor;
+		if (LevelSequenceEditor != nullptr)
+		{
+			ISequencer* Sequencer = LevelSequenceEditor->GetSequencer().Get();
+			return Sequencer;
+		}
+	}
+
+	return nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE
