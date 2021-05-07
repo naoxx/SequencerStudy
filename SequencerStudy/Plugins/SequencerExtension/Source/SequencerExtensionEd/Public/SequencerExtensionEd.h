@@ -32,4 +32,5 @@ private:
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
 	TSharedPtr<class FExtender> ToolBarExtender;
+	FDelegateHandle ObjectBindingDelegateHandle;
 };

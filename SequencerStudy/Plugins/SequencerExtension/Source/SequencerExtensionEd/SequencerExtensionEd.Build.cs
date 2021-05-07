@@ -28,6 +28,7 @@ public class SequencerExtensionEd : ModuleRules
 				"Core",
 
 				//SequencerExtension
+				"Sequencer",
 				"LevelSequence",
 				"MovieScene",
 
@@ -51,7 +52,6 @@ public class SequencerExtensionEd : ModuleRules
 				//SequencerExtension
 				"Sequencer",
 				"LevelSequenceEditor",
-
 
 				//エディター用アイコンなど
 				"EditorStyle",

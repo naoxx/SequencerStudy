@@ -5,15 +5,16 @@
 #include "SequencerExtensionEdCommands.h"
 #include "Misc/MessageDialog.h"
 #include "ToolMenus.h"
+#include "ObjectBindingExtension.h"
 
 //シーケンサー
 #include "Sequencer/Public/ISequencerModule.h"
 #include "LevelSequence.h"
 #include "LevelSequenceEditor/Private/LevelSequenceEditorToolkit.h"
 
-
 //AssetRegistry
 #include "AssetRegistryModule.h"
+
 
 
 
@@ -73,6 +74,7 @@ void FSequencerExtensionEdModule::StartupModule()
 		FToolBarExtensionDelegate::CreateRaw(this, &FSequencerExtensionEdModule::AddToolBarExtention)
 	);
 	SequencerModule.GetToolBarExtensibilityManager()->AddExtender(ToolBarExtender);
+	ObjectBindingDelegateHandle = SequencerModule.RegisterEditorObjectBinding(FOnCreateEditorObjectBinding::CreateStatic(&FObjectBindingExtension::OnCreateActorBinding));
 
 }
 
@@ -85,6 +87,7 @@ void FSequencerExtensionEdModule::ShutdownModule()
 	if (ToolBarExtender.IsValid() && FModuleManager::Get().IsModuleLoaded("Sequencer"))
 	{
 		ISequencerModule& SequencerModule = FModuleManager::GetModuleChecked<ISequencerModule>("Sequencer");
+		SequencerModule.UnRegisterEditorObjectBinding(ObjectBindingDelegateHandle);
 		SequencerModule.GetToolBarExtensibilityManager()->RemoveExtender(ToolBarExtender);
 	}
 	ToolBarExtender = nullptr;
