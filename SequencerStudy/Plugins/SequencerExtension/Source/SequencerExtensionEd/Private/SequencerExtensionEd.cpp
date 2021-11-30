@@ -15,6 +15,8 @@
 //AssetRegistry
 #include "AssetRegistryModule.h"
 
+//\‘¢‘Ì‚ÌÚ×•\Ž¦
+#include "IStructureDetailsView.h"
 
 
 
@@ -76,6 +78,16 @@ void FSequencerExtensionEdModule::StartupModule()
 	SequencerModule.GetToolBarExtensibilityManager()->AddExtender(ToolBarExtender);
 	ObjectBindingDelegateHandle = SequencerModule.RegisterEditorObjectBinding(FOnCreateEditorObjectBinding::CreateStatic(&FObjectBindingExtension::OnCreateActorBinding));
 
+
+	//ObjectBindingContext
+	ObjectBindingContextMenuExtender = MakeShareable(new FExtender);
+	ObjectBindingContextMenuExtender->AddMenuExtension(
+		"Spawnable",
+		EExtensionHook::After,
+		PluginCommands,
+		FNewMenuDelegate::CreateRaw(this, &FSequencerExtensionEdModule::AddObjectBindingContextMenuExtention)
+	);
+	SequencerModule.GetObjectBindingContextMenuExtensibilityManager()->AddExtender(ObjectBindingContextMenuExtender);
 }
 
 void FSequencerExtensionEdModule::ShutdownModule()
@@ -87,6 +99,7 @@ void FSequencerExtensionEdModule::ShutdownModule()
 	if (ToolBarExtender.IsValid() && FModuleManager::Get().IsModuleLoaded("Sequencer"))
 	{
 		ISequencerModule& SequencerModule = FModuleManager::GetModuleChecked<ISequencerModule>("Sequencer");
+		SequencerModule.GetObjectBindingContextMenuExtensibilityManager()->RemoveExtender(ObjectBindingContextMenuExtender);
 		SequencerModule.UnRegisterEditorObjectBinding(ObjectBindingDelegateHandle);
 		SequencerModule.GetToolBarExtensibilityManager()->RemoveExtender(ToolBarExtender);
 	}
@@ -172,6 +185,72 @@ TSharedRef<class SWidget> FSequencerExtensionEdModule::MakeToolbarExtensionMenu(
 
 	return MenuBuilder.MakeWidget();
 }
+
+
+void FSequencerExtensionEdModule::AddObjectBindingContextMenuExtention(FMenuBuilder& MenuBuilder)
+{
+	ISequencer* OpenSequencer = GetCurrentSequencer();
+	if (OpenSequencer == nullptr)
+	{
+		return;
+	}
+	SelectedObjectBinding = FGuid();
+	TArray<FGuid> guids;
+	OpenSequencer->GetSelectedObjects(guids);
+	if (guids.Num() == 1)
+	{
+		SelectedObjectBinding = guids[0];
+	}
+
+	if (!SelectedObjectBinding.IsValid())
+	{
+		return;
+	}
+
+	UMovieScene* MovieScene = OpenSequencer->GetFocusedMovieSceneSequence()->GetMovieScene();
+	FMovieSceneSpawnable* Spawnable = MovieScene->FindSpawnable(SelectedObjectBinding);
+	if (!Spawnable)
+	{
+		return;
+	}
+	MenuBuilder.BeginSection("OverrideObjectBinding", FText::FromString("OverrideObjectBinding"));
+
+	AddSpawnablePropertyMenu(MenuBuilder, MovieScene, OpenSequencer);
+
+	MenuBuilder.EndSection();
+}
+
+
+void FSequencerExtensionEdModule::AddSpawnablePropertyMenu(FMenuBuilder& MenuBuilder, UMovieScene* MovieScene, ISequencer* Sequencer)
+{
+
+	FMovieSceneSpawnable* Spawnable = MovieScene->FindSpawnable(SelectedObjectBinding);
+
+	auto PopulateSubMenu = [this, Spawnable](FMenuBuilder& SubMenuBuilder)
+	{
+		FPropertyEditorModule& PropertyEditor = FModuleManager::Get().LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+
+		FDetailsViewArgs DetailsViewArgs(false, false, false, FDetailsViewArgs::HideNameArea, true);
+		DetailsViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Automatic;
+		DetailsViewArgs.bShowOptions = false;
+		DetailsViewArgs.ColumnWidth = 0.55f;
+
+		FStructOnScope* StructOnScope = new FStructOnScope(FMovieSceneSpawnable::StaticStruct(), (uint8*)Spawnable);
+		TSharedRef<IStructureDetailsView> StructureDetailsView = PropertyEditor.CreateStructureDetailView(
+			DetailsViewArgs,
+			FStructureDetailsViewArgs(),
+			MakeShareable(StructOnScope)
+		);
+		
+		TSharedRef< SWidget > DetailsViewWidget = StructureDetailsView->GetWidget().ToSharedRef();
+
+		SubMenuBuilder.AddWidget(DetailsViewWidget, FText(), true, false);
+	};
+
+	MenuBuilder.AddSubMenu(FText::FromString("SpawnableProperty"), FText(), FNewMenuDelegate::CreateLambda(PopulateSubMenu));
+}
+
+
 
 
 ISequencer* FSequencerExtensionEdModule::GetCurrentSequencer()

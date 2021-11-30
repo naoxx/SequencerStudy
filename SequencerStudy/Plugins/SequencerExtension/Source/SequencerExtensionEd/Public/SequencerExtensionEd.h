@@ -25,6 +25,8 @@ private:
 	//シーケンサーのツールバーメニュー拡張
 	void AddToolBarExtention(FToolBarBuilder& ToolBarBuilder);
 	TSharedRef<class SWidget> MakeToolbarExtensionMenu();
+	void AddObjectBindingContextMenuExtention(FMenuBuilder& MenuBuilder);
+	void AddSpawnablePropertyMenu(FMenuBuilder& MenuBuilder, UMovieScene* MovieScene, ISequencer* Sequencer);
 
 	//LevelSequence取得
 	class ISequencer* GetCurrentSequencer();
@@ -32,5 +34,8 @@ private:
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
 	TSharedPtr<class FExtender> ToolBarExtender;
+	TSharedPtr<FExtender> ObjectBindingContextMenuExtender;
 	FDelegateHandle ObjectBindingDelegateHandle;
+
+	FGuid SelectedObjectBinding;
 };
