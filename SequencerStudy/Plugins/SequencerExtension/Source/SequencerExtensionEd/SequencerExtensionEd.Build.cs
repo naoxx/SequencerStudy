@@ -31,7 +31,7 @@ public class SequencerExtensionEd : ModuleRules
 				"Sequencer",
 				"LevelSequence",
 				"MovieScene",
-
+				"ContentBrowser",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

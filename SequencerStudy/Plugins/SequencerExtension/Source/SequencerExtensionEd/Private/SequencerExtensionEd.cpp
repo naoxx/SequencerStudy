@@ -18,6 +18,9 @@
 //構造体の詳細表示
 #include "IStructureDetailsView.h"
 
+//AssetContextMenu
+#include "ContentBrowserMenuContexts.h"
+
 
 
 static const FName SequencerExtensionTabName("SequencerExtension");
@@ -88,6 +91,7 @@ void FSequencerExtensionEdModule::StartupModule()
 		FNewMenuDelegate::CreateRaw(this, &FSequencerExtensionEdModule::AddObjectBindingContextMenuExtention)
 	);
 	SequencerModule.GetObjectBindingContextMenuExtensibilityManager()->AddExtender(ObjectBindingContextMenuExtender);
+
 }
 
 void FSequencerExtensionEdModule::ShutdownModule()
@@ -148,6 +152,44 @@ void FSequencerExtensionEdModule::RegisterMenus()
 				Entry.SetCommandList(PluginCommands);
 			}
 		}
+	}
+	
+
+	{
+		//右クリックメニュー
+		FToolMenuOwnerScoped ContextMenuOwner("LevelSequenceContextMenuExtension");
+		UToolMenus* ToolMenus = UToolMenus::Get();
+		UToolMenu* AssetContextMenu = ToolMenus->ExtendMenu("ContentBrowser.AssetContextMenu.LevelSequence");
+		if (!AssetContextMenu)
+		{
+			return;
+		}
+
+		FToolMenuSection& Section = AssetContextMenu->FindOrAddSection("GetAssetActions");
+		Section.AddDynamicEntry("LevelSequenceContextMenuExtension", FNewToolMenuSectionDelegate::CreateLambda([this](FToolMenuSection& InSection)
+			{
+				UContentBrowserAssetContextMenuContext* Context = InSection.FindContext<UContentBrowserAssetContextMenuContext>();
+				if (!Context)
+				{
+					return;
+				}
+				//一つのアセットを選択中のみ有効
+				ULevelSequence* LevelSequence = Context->SelectedObjects.Num() == 1 ? Cast<ULevelSequence>(Context->SelectedObjects[0]) : nullptr;
+				if (LevelSequence)
+				{
+					InSection.AddMenuEntry(
+						"LevelSequenceContextMenuExtension",
+						FText::FromString(TEXT("LevelSequenceContextMenuExtension")),
+						FText::FromString(TEXT("LevelSequenceContextMenuExtension")),
+						FSlateIcon(),
+						FExecuteAction::CreateLambda(
+							[this, LevelSequence]
+							{
+								FText DialogText = FText::FromString("LevelSequenceContextMenuExtension");
+								FMessageDialog::Open(EAppMsgType::Ok, DialogText);
+							}));
+				}
+			}));
 	}
 }
 
@@ -251,6 +293,11 @@ void FSequencerExtensionEdModule::AddSpawnablePropertyMenu(FMenuBuilder& MenuBui
 }
 
 
+//LevelSequence右クリックメニュー
+void FSequencerExtensionEdModule::AddLevelSequenceAssetContextMenu()
+{
+
+}
 
 
 ISequencer* FSequencerExtensionEdModule::GetCurrentSequencer()

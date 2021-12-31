@@ -28,6 +28,9 @@ private:
 	void AddObjectBindingContextMenuExtention(FMenuBuilder& MenuBuilder);
 	void AddSpawnablePropertyMenu(FMenuBuilder& MenuBuilder, UMovieScene* MovieScene, ISequencer* Sequencer);
 
+	//LevelSequence右クリックメニュー
+	void AddLevelSequenceAssetContextMenu();
+
 	//LevelSequence取得
 	class ISequencer* GetCurrentSequencer();
 
